@@ -35,6 +35,22 @@ func sender(ctx context.Context, ch chan interface{}) {
 	}
 }
 
+// broadcaster получает сообщение из главного канала и распространяет его по всем работникам
+func broadcaster(chs []chan interface{}, mainCh chan interface{}) {
+	// читаются данных из канала, пока он не закрыт
+	for msg := range mainCh {
+		// при получении сообщения пересылается всем работникам
+		for _, chWorker := range chs {
+			chWorker <- msg
+		}
+	}
+
+	// при закрытии главного канала закрываются и каналы работников
+	for _, chWorker := range chs {
+		close(chWorker)
+	}
+}
+
 func main() {
 	var n int
 	fmt.Printf("Введите количесво работников: \n")
@@ -44,18 +60,25 @@ func main() {
 	}
 
 	// создаем канал для передачи данных, размер буфера равен количеству работников
-	ch := make(chan interface{}, n)
+	chMain := make(chan interface{}, n)
+	chs := make([]chan interface{}, 0)
 
 	// запускаем воркеров
 	for i := 0; i < n; i++ {
-		go worker(ch, i)
+		chWorker := make(chan interface{})
+		chs = append(chs, chWorker)
+		go worker(chWorker, i)
 	}
+
+	// запускаем вещатель для ретрансляции сообщения
+	go broadcaster(chs, chMain)
 
 	// создаем контекст с возможностью отмены для управления завершением работы sender
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	go sender(ctx, ch)
+	// запускаем сендер для трансляции сообщений в главный канал
+	go sender(ctx, chMain)
 
 	// создаем канал для прерывания
 	interrupt := make(chan os.Signal, 1)
@@ -74,7 +97,7 @@ func main() {
 			//даем время воркерам завершить работу
 			time.Sleep(3 * time.Second)
 			// закрываем канал, чтобы воркеры завершили работу
-			close(ch)
+			close(chMain)
 
 			fmt.Printf("Обработчик завершил работу работу\n")
 			return
