@@ -43,8 +43,16 @@ func setNum(timeout <-chan time.Time, ch chan<- int) {
 }
 
 func main() {
+	var sec int
+	fmt.Printf("Введите через сколько секунд завершить программу: ")
+	_, err := fmt.Scanf("%d", &sec)
+	if err != nil {
+		fmt.Printf("\nОшибка при вводе данных: %s\n", err)
+		return
+	}
 	ch := make(chan int)
-	timeout := time.After(6 * time.Second)
+	duration := time.Duration(sec) * time.Second
+	timeout := time.After(duration)
 	var wg sync.WaitGroup
 	wg.Add(1)
 
