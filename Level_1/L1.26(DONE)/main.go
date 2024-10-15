@@ -9,7 +9,7 @@ import (
 // checkUnique проверяет, что все символы в строке уникальны
 func checkUnique(str string) bool {
 	// создаем пусту карту для хранения символов
-	m := make(map[string]struct{})
+	m := make(map[rune]struct{})
 
 	// преобразуем строку к нижнему регистру, чтобы сделать проверку регистронезависимой
 	str = strings.ToLower(str)
@@ -21,13 +21,13 @@ func checkUnique(str string) bool {
 		runeValue, width := utf8.DecodeRuneInString(str[i:])
 
 		// проверяем встречался ли этот символ ранее
-		_, founded := m[string(runeValue)]
+		_, founded := m[runeValue]
 		if founded {
 			// если встречался возвращаем false
 			return false
 		} else {
 			// если не встречался то добавляем в карту
-			m[string(runeValue)] = struct{}{}
+			m[runeValue] = struct{}{}
 		}
 		//fmt.Printf("%#U starts at byte position %d\n", runeValue, i-width)
 
@@ -40,9 +40,9 @@ func checkUnique(str string) bool {
 
 func main() {
 
-	str := "aabcd"
-
-	fmt.Println(checkUnique(str))
+	fmt.Println(checkUnique("abcd"))
+	fmt.Println(checkUnique("abCdefAaf"))
+	fmt.Println(checkUnique("aabcd"))
 
 }
 

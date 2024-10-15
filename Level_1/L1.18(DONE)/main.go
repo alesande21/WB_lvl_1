@@ -7,17 +7,17 @@ import (
 )
 
 type Сounter struct {
-	count int32
+	count int64
 }
 
 // Increase метод счетчика увеличивает значение счетчика count на 1, используя атомарную операцию
 func (c *Сounter) Increase() {
-	atomic.AddInt32(&c.count, 1)
+	atomic.AddInt64(&c.count, 1)
 }
 
 // Get метод счетчика используя атомарный метод возвращает значение счетчика count
-func (c *Сounter) Get() int32 {
-	return atomic.LoadInt32(&c.count)
+func (c *Сounter) Get() int64 {
+	return atomic.LoadInt64(&c.count)
 }
 
 var counter Сounter
